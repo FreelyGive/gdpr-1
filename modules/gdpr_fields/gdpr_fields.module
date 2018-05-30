@@ -231,14 +231,18 @@ function gdpr_fields_collect_gdpr_entities($entity_type, $entity, array $entity_
 
       // If the target is our current entity type, find all owned entities.
       if ($type == $entity_type) {
+        $field_name = $field->property_name;
+        if (!empty($property_info['schema field'])) {
+          $field_name = $property_info['schema field'];
+        }
         $query = new EntityFieldQuery();
         $query->entityCondition('entity_type', $field->entity_type);
         $query->entityCondition('bundle', $field->entity_bundle);
         if (!empty($property_info['field'])) {
-          $query->fieldCondition($field->property_name, 'target_id', $entity_id);
+          $query->fieldCondition($field_name, 'target_id', $entity_id);
         }
         else {
-          $query->propertyCondition($field->property_name, $entity_id);
+          $query->propertyCondition($field_name, $entity_id);
         }
         $results = $query->execute();
         if (isset($results[$field->entity_type])) {
