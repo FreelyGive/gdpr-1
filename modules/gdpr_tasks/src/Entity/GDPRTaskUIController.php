@@ -13,7 +13,7 @@ class GDPRTaskUIController extends EntityBundleableUIController {
     // Set this on the object so classes that extend hook_menu() can use it.
     $plural_label = isset($this->entityInfo['plural label']) ? $this->entityInfo['plural label'] : $this->entityInfo['label'] . 's';
 
-    $items['admin/gdpr/task-list'] = array(
+    $items['admin/config/gdpr/task-list'] = array(
       'title' => $plural_label,
       'page callback' => 'drupal_get_form',
       'page arguments' => array($this->entityType . '_overview_form', $this->entityType),

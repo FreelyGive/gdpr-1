@@ -134,7 +134,7 @@ function gdpr_tasks_menu() {
     'file' => 'gdpr_tasks.pages.inc',
   );
 
-  $items['admin/gdpr/task-email'] = array(
+  $items['admin/config/gdpr/task-email'] = array(
     'title' => 'Task Emails',
     'description' => 'Configure email templates to be sent for task requests.',
     'page callback' => 'drupal_get_form',

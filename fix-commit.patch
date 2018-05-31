@@ -1,0 +1,295 @@
+diff --git a/gdpr.install b/gdpr.install
+index ed88117..95225f0 100644
+--- a/gdpr.install
++++ b/gdpr.install
+@@ -21,7 +21,7 @@ function gdpr_requirements($phase) {
+         'title' => $t('GDPR Preparation'),
+         'value' => $t('Self assessment Checklist: <a href="@url">@percent% done</a>.', array(
+           '@percent' => $percent,
+-          '@url' => '/admin/gdpr/checklist',
++          '@url' => '/admin/config/gdpr/checklist',
+         )),
+         'severity' => REQUIREMENT_INFO,
+       );
+diff --git a/gdpr.module b/gdpr.module
+index cbc9d16..4c4ff67 100644
+--- a/gdpr.module
++++ b/gdpr.module
+@@ -153,7 +153,7 @@ function gdpr_checklistapi_checklist_info() {
+ 
+   $definitions['gdpr_checklist'] = array(
+     '#title' => t('GDPR Checklist'),
+-    '#path' => 'admin/gdpr/checklist',
++    '#path' => 'admin/config/gdpr/checklist',
+     '#description' => t('GDPR Checklist'),
+     '#help' => t('<p>Complete this checklist to make your site GDPR-compliant.</p>'),
+     'getting_started' => array(
+diff --git a/includes/gdpr.admin.inc b/includes/gdpr.admin.inc
+deleted file mode 100644
+index 98b34a6..0000000
+--- a/includes/gdpr.admin.inc
++++ /dev/null
+@@ -1,50 +0,0 @@
+-<?php
+-
+-/**
+- * @file
+- * Page callbacks for GDPR admin pages.
+- */
+-
+-/**
+- * Page callback for the top level dashboard page.
+- */
+-function gdpr_dashboard_page() {
+-  $blocks = array();
+-  if ($admin = db_query("SELECT menu_name, mlid FROM {menu_links} WHERE link_path = 'admin/gdpr' AND module = 'system'")->fetchAssoc()) {
+-    $result = db_query("
+-      SELECT m.*, ml.*
+-      FROM {menu_links} ml
+-      INNER JOIN {menu_router} m ON ml.router_path = m.path
+-      WHERE menu_name = :menu_name AND ml.mlid = :mlid AND hidden = 0", $admin, array('fetch' => PDO::FETCH_ASSOC));
+-
+-    foreach ($result as $item) {
+-      _menu_link_translate($item);
+-      if (!$item['access']) {
+-        continue;
+-      }
+-      // The link description, either derived from 'description' in hook_menu()
+-      // or customized via menu module is used as title attribute.
+-      if (!empty($item['localized_options']['attributes']['title'])) {
+-        $item['description'] = $item['localized_options']['attributes']['title'];
+-        unset($item['localized_options']['attributes']['title']);
+-      }
+-      $block = $item;
+-      $block['content'] = '';
+-      $block['content'] .= theme('admin_block_content', array('content' => system_admin_menu_block($item)));
+-      if (!empty($block['content'])) {
+-        $block['show'] = TRUE;
+-      }
+-
+-      // Prepare for sorting as in function _menu_tree_check_access().
+-      // The weight is offset so it is always positive, with a uniform 5-digits.
+-      $blocks[(50000 + $item['weight']) . ' ' . $item['title'] . ' ' . $item['mlid']] = $block;
+-    }
+-  }
+-  if ($blocks) {
+-    ksort($blocks);
+-    return theme('admin_page', array('blocks' => $blocks));
+-  }
+-  else {
+-    return t('You do not have any pages yet.');
+-  }
+-}
+diff --git a/modules/gdpr_consent/gdpr_consent.module b/modules/gdpr_consent/gdpr_consent.module
+index 68d2d6c..2c124f6 100644
+--- a/modules/gdpr_consent/gdpr_consent.module
++++ b/modules/gdpr_consent/gdpr_consent.module
+@@ -34,7 +34,7 @@ function gdpr_consent_menu() {
+     'menu_name' => 'navigation',
+     'file' => 'includes/gdpr_consent.agreements.inc',
+   );
+-  $items['admin/gdpr/agreements/%gdpr_consent_agreement'] = array(
++  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement'] = array(
+     'title' => 'Consent Agreement',
+     'page callback' => 'gdpr_consent_agreement_view_entity',
+     //'page callback' => 'entity_ui_entity_page_view',
+@@ -43,13 +43,13 @@ function gdpr_consent_menu() {
+     'file' => 'includes/gdpr_consent.agreements.inc',
+   );
+   // 'View' tab for an individual entity.
+-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/view'] = array(
++  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/view'] = array(
+     'title' => 'View',
+     'type' => MENU_DEFAULT_LOCAL_TASK,
+     'weight' => -10,
+   );
+   // 'Edit' tab for an individual entity.
+-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/edit'] = array(
++  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/edit'] = array(
+     'title' => 'Edit',
+     'page callback' => 'entity_ui_get_form',
+     'page arguments' => array('gdpr_consent_agreement', 3),
+@@ -59,7 +59,7 @@ function gdpr_consent_menu() {
+     'file' => 'includes/gdpr_consent.admin.inc',
+   );
+   // 'Revisions' tab for an individual entity.
+-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/revisions'] = array(
++  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/revisions'] = array(
+     'title' => 'Revisions',
+     'page callback' => 'gdpr_consent_agreement_revision_overview',
+     'page arguments' => array(3),
+@@ -69,7 +69,7 @@ function gdpr_consent_menu() {
+     'weight' => -3,
+   );
+   // An individual revision view page.
+-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/revisions/%/view'] = array(
++  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/revisions/%/view'] = array(
+     'title' => 'Revision',
+     'page callback' => 'gdpr_consent_agreement_view_revision',
+     'page arguments' => array(5),
+@@ -78,7 +78,7 @@ function gdpr_consent_menu() {
+     'weight' => -3,
+   );
+   // 'Delete' tab for an individual entity.
+-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/delete'] = array(
++  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/delete'] = array(
+     'title' => 'Delete',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('gdpr_consent_agreement_form', 3),
+@@ -126,7 +126,7 @@ function gdpr_consent_entity_info() {
+       'gdpr_consent_agreement' => array(
+         'label' => t('GDPR Consent Agreement'),
+         'admin' => array(
+-          'path' => 'admin/gdpr/agreements',
++          'path' => 'admin/config/gdpr/agreements',
+           'access arguments' => array('administer site configuration'),
+         ),
+       ),
+@@ -140,7 +140,7 @@ function gdpr_consent_entity_info() {
+     'uri callback' => 'entity_class_uri',
+     'access callback' => 'gdpr_consent_access_callback',
+     'admin ui' => array(
+-      'path' => 'admin/gdpr/agreements',
++      'path' => 'admin/config/gdpr/agreements',
+       'controller class' => 'ConsentAgreementEntityUIController',
+       'menu wildcard' => '%gdpr_consent_agreement',
+       'file' => 'includes/gdpr_consent.admin.inc',
+@@ -719,7 +719,7 @@ class ConsentAgreement extends Entity {
+    * Implement a custom default URI.
+    */
+   public function defaultUri() {
+-    return array('path' => 'admin/gdpr/agreements/' . $this->identifier());
++    return array('path' => 'admin/config/gdpr/agreements/' . $this->identifier());
+   }
+ 
+   /**
+diff --git a/modules/gdpr_consent/includes/gdpr_consent.admin.inc b/modules/gdpr_consent/includes/gdpr_consent.admin.inc
+index 0d58e65..b6d0ed5 100644
+--- a/modules/gdpr_consent/includes/gdpr_consent.admin.inc
++++ b/modules/gdpr_consent/includes/gdpr_consent.admin.inc
+@@ -89,7 +89,7 @@ function gdpr_consent_agreement_form_submit(&$form, &$form_state) {
+   $entity = entity_ui_form_submit_build_entity($form, $form_state);
+   $entity->save();
+   drupal_set_message(t('@title agreement has been saved.', array('@title' => $entity->title)));
+-  $form_state['redirect'] = 'admin/gdpr/agreements';
++  $form_state['redirect'] = 'admin/config/gdpr/agreements';
+ }
+ 
+ /**
+@@ -115,16 +115,16 @@ function gdpr_consent_agreement_revision_overview($agreement) {
+     $operations = array();
+ 
+     if ($revision->current_revision > 0) {
+-      $row[] = array('data' => t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/gdpr/agreements/$agreement->id"), '!username' => theme('username', array('account' => $revision))))
++      $row[] = array('data' => t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/config/gdpr/agreements/$agreement->id"), '!username' => theme('username', array('account' => $revision))))
+                        . (($revision->log != '') ? '<p class="revision-log">' . filter_xss($revision->log) . '</p>' : ''),
+                      'class' => array('revision-current'));
+       $operations[] = array('data' => drupal_placeholder(t('current revision')), 'class' => array('revision-current'), 'colspan' => 2);
+     }
+     else {
+-      $row[] = t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/view"), '!username' => theme('username', array('account' => $revision))))
++      $row[] = t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/config/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/view"), '!username' => theme('username', array('account' => $revision))))
+                . (($revision->log != '') ? '<p class="revision-log">' . filter_xss($revision->log) . '</p>' : '');
+-      $operations[] = l(t('revert'), "admin/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/revert");
+-      $operations[] = l(t('delete'), "admin/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/delete");
++      $operations[] = l(t('revert'), "admin/config/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/revert");
++      $operations[] = l(t('delete'), "admin/config/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/delete");
+     }
+     $rows[] = array_merge($row, $operations);
+   }
+diff --git a/modules/gdpr_consent/includes/gdpr_consent.agreements.inc b/modules/gdpr_consent/includes/gdpr_consent.agreements.inc
+index ec6cd2e..e14de9f 100644
+--- a/modules/gdpr_consent/includes/gdpr_consent.agreements.inc
++++ b/modules/gdpr_consent/includes/gdpr_consent.agreements.inc
+@@ -25,7 +25,7 @@ function gdpr_consent_collected_agreements($account) {
+ }
+ 
+ /**
+- * Callback for /admin/gdpr/agreements/{gdpr_consent_agreement ID} page.
++ * Callback for /admin/config/gdpr/agreements/{gdpr_consent_agreement ID} page.
+  *
+  * As we load the entity for display, we're responsible for invoking a number
+  * of hooks in their proper order.
+@@ -82,7 +82,7 @@ function gdpr_consent_agreement_view_entity($entity, $view_mode = 'default') {
+ }
+ 
+ /**
+- * Callback for /admin/gdpr/agreements/{gdpr_consent_agreement ID}/{revision ID} page.
++ * Callback for /admin/config/gdpr/agreements/{gdpr_consent_agreement ID}/{revision ID} page.
+  */
+ function gdpr_consent_agreement_view_revision($revision_id) {
+   $agreement = entity_revision_load('gdpr_consent_agreement', $revision_id);
+diff --git a/modules/gdpr_dump/plugins/export_ui/gdpr_sanitizer_ui.inc b/modules/gdpr_dump/plugins/export_ui/gdpr_sanitizer_ui.inc
+index d7e476f..c791932 100644
+--- a/modules/gdpr_dump/plugins/export_ui/gdpr_sanitizer_ui.inc
++++ b/modules/gdpr_dump/plugins/export_ui/gdpr_sanitizer_ui.inc
+@@ -10,7 +10,7 @@ $plugin = array(
+   'access' => 'administer gdpr sanitizers',
+ 
+   'menu' => array(
+-    'menu prefix' => 'admin/gdpr',
++    'menu prefix' => 'admin/config/gdpr',
+     'menu item' => 'sanitizer-list',
+     'menu title' => 'GDPR Sanitizers',
+     'menu description' => 'Configure GDPR Sanitizers.',
+diff --git a/modules/gdpr_export_log/gdpr_export_log.module b/modules/gdpr_export_log/gdpr_export_log.module
+index a1574c1..d6fe6ad 100644
+--- a/modules/gdpr_export_log/gdpr_export_log.module
++++ b/modules/gdpr_export_log/gdpr_export_log.module
+@@ -18,7 +18,7 @@ function gdpr_export_log_entity_info() {
+     'controller class' => 'GDPRExportLogController',
+     'module' => 'gdpr_export_log',
+     'admin ui' => array(
+-      'path' => 'admin/gdpr/gdpr-export-log',
++      'path' => 'admin/config/gdpr/gdpr-export-log',
+       'file' => 'gdpr_export_log.admin.inc',
+       'menu wildcard' => '%gdpr_export_log',
+       'controller class' => 'GDPRExportLogUIController',
+@@ -27,7 +27,7 @@ function gdpr_export_log_entity_info() {
+       'gdpr_export_log' => array(
+         'label' => t('Export Log'),
+         'admin' => array(
+-          'path' => 'admin/gdpr/gdpr-export-log',
++          'path' => 'admin/config/gdpr/gdpr-export-log',
+           'access arguments' => array('administer export log entities'),
+         ),
+       ),
+diff --git a/modules/gdpr_fields/plugins/export_ui/gdpr_fields_ui.inc b/modules/gdpr_fields/plugins/export_ui/gdpr_fields_ui.inc
+index 1e013ba..791f532 100644
+--- a/modules/gdpr_fields/plugins/export_ui/gdpr_fields_ui.inc
++++ b/modules/gdpr_fields/plugins/export_ui/gdpr_fields_ui.inc
+@@ -10,7 +10,7 @@ $plugin = array(
+   'access' => 'administer gdpr fields',
+ 
+   'menu' => array(
+-    'menu prefix' => 'admin/gdpr',
++    'menu prefix' => 'admin/config/gdpr',
+     'menu item' => 'field-list',
+     'menu title' => 'GDPR Field config',
+     'menu description' => 'Find and configure GDPR field data.',
+diff --git a/modules/gdpr_tasks/gdpr_tasks.module b/modules/gdpr_tasks/gdpr_tasks.module
+index 1f10acf..848dc9e 100644
+--- a/modules/gdpr_tasks/gdpr_tasks.module
++++ b/modules/gdpr_tasks/gdpr_tasks.module
+@@ -134,7 +134,7 @@ function gdpr_tasks_menu() {
+     'file' => 'gdpr_tasks.pages.inc',
+   );
+ 
+-  $items['admin/gdpr/task-email'] = array(
++  $items['admin/config/gdpr/task-email'] = array(
+     'title' => 'Task Emails',
+     'description' => 'Configure email templates to be sent for task requests.',
+     'page callback' => 'drupal_get_form',
+diff --git a/modules/gdpr_tasks/src/Entity/GDPRTaskUIController.php b/modules/gdpr_tasks/src/Entity/GDPRTaskUIController.php
+index 882f5e1..21f8558 100644
+--- a/modules/gdpr_tasks/src/Entity/GDPRTaskUIController.php
++++ b/modules/gdpr_tasks/src/Entity/GDPRTaskUIController.php
+@@ -13,7 +13,7 @@ class GDPRTaskUIController extends EntityBundleableUIController {
+     // Set this on the object so classes that extend hook_menu() can use it.
+     $plural_label = isset($this->entityInfo['plural label']) ? $this->entityInfo['plural label'] : $this->entityInfo['label'] . 's';
+ 
+-    $items['admin/gdpr/task-list'] = array(
++    $items['admin/config/gdpr/task-list'] = array(
+       'title' => $plural_label,
+       'page callback' => 'drupal_get_form',
+       'page arguments' => array($this->entityType . '_overview_form', $this->entityType),

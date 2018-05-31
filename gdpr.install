@@ -21,7 +21,7 @@ function gdpr_requirements($phase) {
         'title' => $t('GDPR Preparation'),
         'value' => $t('Self assessment Checklist: <a href="@url">@percent% done</a>.', array(
           '@percent' => $percent,
-          '@url' => '/admin/gdpr/checklist',
+          '@url' => '/admin/config/gdpr/checklist',
         )),
         'severity' => REQUIREMENT_INFO,
       );

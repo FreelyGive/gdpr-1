@@ -10,7 +10,7 @@ $plugin = array(
   'access' => 'administer gdpr fields',
 
   'menu' => array(
-    'menu prefix' => 'admin/gdpr',
+    'menu prefix' => 'admin/config/gdpr',
     'menu item' => 'field-list',
     'menu title' => 'GDPR Field config',
     'menu description' => 'Find and configure GDPR field data.',

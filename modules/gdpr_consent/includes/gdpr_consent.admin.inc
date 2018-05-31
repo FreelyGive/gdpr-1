@@ -89,7 +89,7 @@ function gdpr_consent_agreement_form_submit(&$form, &$form_state) {
   $entity = entity_ui_form_submit_build_entity($form, $form_state);
   $entity->save();
   drupal_set_message(t('@title agreement has been saved.', array('@title' => $entity->title)));
-  $form_state['redirect'] = 'admin/gdpr/agreements';
+  $form_state['redirect'] = 'admin/config/gdpr/agreements';
 }
 
 /**
@@ -115,16 +115,16 @@ function gdpr_consent_agreement_revision_overview($agreement) {
     $operations = array();
 
     if ($revision->current_revision > 0) {
-      $row[] = array('data' => t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/gdpr/agreements/$agreement->id"), '!username' => theme('username', array('account' => $revision))))
+      $row[] = array('data' => t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/config/gdpr/agreements/$agreement->id"), '!username' => theme('username', array('account' => $revision))))
                        . (($revision->log != '') ? '<p class="revision-log">' . filter_xss($revision->log) . '</p>' : ''),
                      'class' => array('revision-current'));
       $operations[] = array('data' => drupal_placeholder(t('current revision')), 'class' => array('revision-current'), 'colspan' => 2);
     }
     else {
-      $row[] = t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/view"), '!username' => theme('username', array('account' => $revision))))
+      $row[] = t('!date by !username', array('!date' => l(format_date($revision->timestamp, 'short'), "admin/config/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/view"), '!username' => theme('username', array('account' => $revision))))
                . (($revision->log != '') ? '<p class="revision-log">' . filter_xss($revision->log) . '</p>' : '');
-      $operations[] = l(t('revert'), "admin/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/revert");
-      $operations[] = l(t('delete'), "admin/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/delete");
+      $operations[] = l(t('revert'), "admin/config/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/revert");
+      $operations[] = l(t('delete'), "admin/config/gdpr/agreements/$agreement->id/revisions/$revision->revision_id/delete");
     }
     $rows[] = array_merge($row, $operations);
   }

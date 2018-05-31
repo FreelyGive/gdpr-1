@@ -25,7 +25,7 @@ function gdpr_consent_collected_agreements($account) {
 }
 
 /**
- * Callback for /admin/gdpr/agreements/{gdpr_consent_agreement ID} page.
+ * Callback for /admin/config/gdpr/agreements/{gdpr_consent_agreement ID} page.
  *
  * As we load the entity for display, we're responsible for invoking a number
  * of hooks in their proper order.
@@ -82,7 +82,7 @@ function gdpr_consent_agreement_view_entity($entity, $view_mode = 'default') {
 }
 
 /**
- * Callback for /admin/gdpr/agreements/{gdpr_consent_agreement ID}/{revision ID} page.
+ * Callback for /admin/config/gdpr/agreements/{gdpr_consent_agreement ID}/{revision ID} page.
  */
 function gdpr_consent_agreement_view_revision($revision_id) {
   $agreement = entity_revision_load('gdpr_consent_agreement', $revision_id);

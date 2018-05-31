@@ -10,7 +10,7 @@ $plugin = array(
   'access' => 'administer gdpr sanitizers',
 
   'menu' => array(
-    'menu prefix' => 'admin/gdpr',
+    'menu prefix' => 'admin/config/gdpr',
     'menu item' => 'sanitizer-list',
     'menu title' => 'GDPR Sanitizers',
     'menu description' => 'Configure GDPR Sanitizers.',

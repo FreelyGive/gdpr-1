@@ -153,7 +153,7 @@ function gdpr_checklistapi_checklist_info() {
 
   $definitions['gdpr_checklist'] = array(
     '#title' => t('GDPR Checklist'),
-    '#path' => 'admin/gdpr/checklist',
+    '#path' => 'admin/config/gdpr/checklist',
     '#description' => t('GDPR Checklist'),
     '#help' => t('<p>Complete this checklist to make your site GDPR-compliant.</p>'),
     'getting_started' => array(

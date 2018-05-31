@@ -34,7 +34,7 @@ function gdpr_consent_menu() {
     'menu_name' => 'navigation',
     'file' => 'includes/gdpr_consent.agreements.inc',
   );
-  $items['admin/gdpr/agreements/%gdpr_consent_agreement'] = array(
+  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement'] = array(
     'title' => 'Consent Agreement',
     'page callback' => 'gdpr_consent_agreement_view_entity',
     //'page callback' => 'entity_ui_entity_page_view',
@@ -43,13 +43,13 @@ function gdpr_consent_menu() {
     'file' => 'includes/gdpr_consent.agreements.inc',
   );
   // 'View' tab for an individual entity.
-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/view'] = array(
+  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/view'] = array(
     'title' => 'View',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
   // 'Edit' tab for an individual entity.
-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/edit'] = array(
+  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/edit'] = array(
     'title' => 'Edit',
     'page callback' => 'entity_ui_get_form',
     'page arguments' => array('gdpr_consent_agreement', 3),
@@ -59,7 +59,7 @@ function gdpr_consent_menu() {
     'file' => 'includes/gdpr_consent.admin.inc',
   );
   // 'Revisions' tab for an individual entity.
-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/revisions'] = array(
+  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/revisions'] = array(
     'title' => 'Revisions',
     'page callback' => 'gdpr_consent_agreement_revision_overview',
     'page arguments' => array(3),
@@ -69,7 +69,7 @@ function gdpr_consent_menu() {
     'weight' => -3,
   );
   // An individual revision view page.
-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/revisions/%/view'] = array(
+  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/revisions/%/view'] = array(
     'title' => 'Revision',
     'page callback' => 'gdpr_consent_agreement_view_revision',
     'page arguments' => array(5),
@@ -78,7 +78,7 @@ function gdpr_consent_menu() {
     'weight' => -3,
   );
   // 'Delete' tab for an individual entity.
-  $items['admin/gdpr/agreements/%gdpr_consent_agreement/delete'] = array(
+  $items['admin/config/gdpr/agreements/%gdpr_consent_agreement/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('gdpr_consent_agreement_form', 3),
@@ -126,7 +126,7 @@ function gdpr_consent_entity_info() {
       'gdpr_consent_agreement' => array(
         'label' => t('GDPR Consent Agreement'),
         'admin' => array(
-          'path' => 'admin/gdpr/agreements',
+          'path' => 'admin/config/gdpr/agreements',
           'access arguments' => array('administer site configuration'),
         ),
       ),
@@ -140,7 +140,7 @@ function gdpr_consent_entity_info() {
     'uri callback' => 'entity_class_uri',
     'access callback' => 'gdpr_consent_access_callback',
     'admin ui' => array(
-      'path' => 'admin/gdpr/agreements',
+      'path' => 'admin/config/gdpr/agreements',
       'controller class' => 'ConsentAgreementEntityUIController',
       'menu wildcard' => '%gdpr_consent_agreement',
       'file' => 'includes/gdpr_consent.admin.inc',
@@ -719,7 +719,7 @@ class ConsentAgreement extends Entity {
    * Implement a custom default URI.
    */
   public function defaultUri() {
-    return array('path' => 'admin/gdpr/agreements/' . $this->identifier());
+    return array('path' => 'admin/config/gdpr/agreements/' . $this->identifier());
   }
 
   /**
