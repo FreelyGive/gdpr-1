@@ -9,7 +9,6 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\file\FileInterface;
-use Drupal\gdpr_fields\Controller\GDPRController;
 use Drupal\gdpr_tasks\Entity\TaskInterface;
 use Drupal\user\UserInterface;
 
@@ -89,13 +88,13 @@ function gdpr_tasks_theme_suggestions_gdpr_task(array $variables) {
  * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
  * @throws \Drupal\Component\Plugin\Exception\PluginException
  * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
- * @throws \Drupal\Core\Entity\EntityMalformedException
  */
 function gdpr_tasks_generate_sar_report(UserInterface $user) {
-  /* @var \Drupal\gdpr_fields\Controller\GDPRController $controller */
-  $controller = \Drupal::classResolver()->getInstanceFromDefinition(GDPRController::class);
-
-  return $controller->rtaData($user);
+  /* @var \Drupal\gdpr_fields\EntityTraversalFactory $traversalFactory */
+  $traversalFactory = Drupal::service('gdpr_tasks.rta_traversal');
+  $traversal = $traversalFactory->getTraversal($user);
+  $data = $traversal->getResults();
+  return $data;
 }
 
 /**
@@ -259,4 +258,24 @@ function gdpr_tasks_file_access(FileInterface $file, $operation, AccountInterfac
   }
 
   return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * Update entity definitions of certain entity types to be excluded from entity
+ * traversal.
+ */
+function gdpr_fields_entity_type_alter(array &$entity_types) {
+  /* @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
+  // Excluded entity types.
+  $exlude_entity_types = [
+    'gdpr_tasks',
+  ];
+
+  foreach ($exlude_entity_types as $type) {
+    if (isset($entity_types[$type])) {
+      $entity_types[$type]->set('gdpr_entity_traversal_exclude', TRUE);
+    }
+  }
 }
